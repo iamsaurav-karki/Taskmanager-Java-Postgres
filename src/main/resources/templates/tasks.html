@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tasks - Task Manager</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="app-title">
+                <h1>Task Manager</h1>
+            </div>
+            <div class="user-info">
+                <span sec:authentication="name"></span>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-sm">Logout</button>
+                </form>
+            </div>
+        </header>
+        
+        <main class="app-content">
+            <div class="task-stats">
+                <div class="stat-card">
+                    <h3>Pending Tasks</h3>
+                    <p class="stat-number" th:text="${pendingCount}">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Completed Tasks</h3>
+                    <p class="stat-number" th:text="${completedCount}">0</p>
+                </div>
+                <a th:href="@{/tasks/new}" class="btn btn-primary">Add New Task</a>
+            </div>
+            
+            <section class="task-list-section">
+                <h2>Pending Tasks</h2>
+                <div th:if="${tasks.empty}" class="empty-state">
+                    <p>No pending tasks. Add your first task to get started!</p>
+                </div>
+                <div th:unless="${tasks.empty}" class="task-list">
+                    <div th:each="task : ${tasks}" class="task-card" th:classappend="${task.priority.name().toLowerCase()}">
+                        <div class="task-header">
+                            <h3 th:text="${task.title}">Task Title</h3>
+                            <span class="priority-badge" th:text="${task.priority}">MEDIUM</span>
+                        </div>
+                        <p class="task-description" th:text="${task.description}">Task description</p>
+                        <div class="task-date" th:if="${task.dueDate}">
+                            <span>Due: </span>
+                            <span th:text="${#temporals.format(task.dueDate, 'dd MMM yyyy, HH:mm')}">01 Jan 2025, 12:00</span>
+                        </div>
+                        <div class="task-actions">
+                            <form th:action="@{/tasks/{id}/toggle(id=${task.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-sm">Mark Complete</button>
+                            </form>
+                            <a th:href="@{/tasks/{id}/edit(id=${task.id})}" class="btn btn-sm">Edit</a>
+                            <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post" style="display: inline;" 
+                                  onsubmit="return confirm('Are you sure you want to delete this task?')">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="task-list-section completed-section">
+                <h2>Completed Tasks</h2>
+                <div th:if="${completedTasks.empty}" class="empty-state">
+                    <p>No completed tasks yet.</p>
+                </div>
+                <div th:unless="${completedTasks.empty}" class="task-list">
+                    <div th:each="task : ${completedTasks}" class="task-card completed">
+                        <div class="task-header">
+                            <h3 th:text="${task.title}">Task Title</h3>
+                        </div>
+                        <p class="task-description" th:text="${task.description}">Task description</p>
+                        <div class="task-date">
+                            <span>Completed: </span>
+                            <span th:text="${#temporals.format(task.createdAt, 'dd MMM yyyy')}">01 Jan 2025</span>
+                        </div>
+                        <div class="task-actions">
+                            <form th:action="@{/tasks/{id}/toggle(id=${task.id})}" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-sm">Mark Incomplete</button>
+                            </form>
+                            <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post" style="display: inline;"
+                                  onsubmit="return confirm('Are you sure you want to delete this task?')">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
